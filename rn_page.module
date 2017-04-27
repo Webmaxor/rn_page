@@ -1,0 +1,112 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function rn_page_menu() {
+  $items = array();
+
+  $items['drupal-test-task'] = array(
+    'type' => MENU_NORMAL_ITEM,
+    'page callback' => 'rn_page_drupal_test_task',
+    'access arguments' => array('access content'),
+  );
+  
+  $items['drupal-test-task-views'] = array(
+    'type' => MENU_NORMAL_ITEM,
+    'page callback' => 'rn_page_drupal_test_task_views',
+    'access arguments' => array('access content'),
+  );
+  
+  $items['selectmenu-tester'] = array(
+    'type' => MENU_NORMAL_ITEM,
+    'access arguments' => array('access content'),
+		'page callback' => 'drupal_get_form',
+    'page arguments' => array('rn_page_custom_form', NULL),
+  );
+
+  return $items;
+}
+
+/**
+ * Menu callback;
+ */
+function rn_page_drupal_test_task() {
+  $users = db_select('users', 'u')
+    ->fields('u', array('uid', 'name'))
+    ->extend('PagerDefault')
+    ->condition('uid', 0, '<>')
+    ->limit(50)
+    ->execute()->fetchAll();
+  
+  $header = array(
+    t('ID'), 
+    t('Username'), 
+    t('')
+  );
+
+  $rows = array();
+  
+  if ($users) {
+    foreach ($users as $user) {
+      //Check if current user has access to edit profile
+      if (user_access('administer users')) {
+        $edit_link = l(t('edit'), 'user/' . $user->uid . '/edit');
+      }
+      else {
+        $edit_link = '';
+      }
+      $rows[] = array(
+        $user->uid,
+        $user->name,
+        $edit_link
+      );
+    }
+  }
+	
+  return theme('table', array(
+    'header' => $header, 
+    'rows' => $rows,
+    'attributes' => array('width' => '100%')
+  ));
+}
+
+/**
+ * Menu callback;
+ */
+function rn_page_custom_form() {
+
+  $form['#attached'] = array(
+    'library' => array(
+      array('system', 'ui.widget'),
+    ),
+    'js' => array(
+      //'misc/drupal.js', //Drupal loads it by default
+      //'misc/jquery.once.js', //Drupal loads it by default
+      drupal_get_path('module', 'rn_page') . '/js/jquery.ui.selectmenu.js',
+      drupal_get_path('module', 'rn_page') . '/js/rn_page.js',
+    ),
+    'css' => array(
+      drupal_get_path('module', 'rn_page') . '/css/jquery.ui.selectmenu.css',
+    )
+  );
+  
+  $form['selectmenu_dropdown1'] = array(
+    '#type' => 'select',
+    '#title' => t('Selectmenu dropdown1'),
+    '#options' => array('Option 1', 'Option 2', 'Option 3'),
+  );
+
+	$form['actions']['submit']=array(
+    '#type' => 'submit',
+    '#value' => 'Save',
+  );
+
+	return $form;
+}
+
+/**
+ * @file
+ * Code for the  feature.
+ */
+include_once 'rn_page.features.inc';
