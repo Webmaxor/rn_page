@@ -12,12 +12,6 @@ function rn_page_menu() {
     'access arguments' => array('access content'),
   );
   
-  $items['drupal-test-task-views'] = array(
-    'type' => MENU_NORMAL_ITEM,
-    'page callback' => 'rn_page_drupal_test_task_views',
-    'access arguments' => array('access content'),
-  );
-  
   $items['selectmenu-tester'] = array(
     'type' => MENU_NORMAL_ITEM,
     'access arguments' => array('access content'),
